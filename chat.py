@@ -1,12 +1,14 @@
 import socket
 import threading
+import logging
 
 HOST = "localhost"
 PORT = 2024
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((HOST, PORT))
-
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%d-%b-%y %H:%M:%S",
+)
 
 users = {}
 
@@ -22,11 +24,11 @@ def handle(user):
     while True:
         username = users.get(user)
         message = user.recv(1024).decode()
-        if message == "!quit\n":
+        if message == "!quit":
             del users[user]
             user.close()
-            broadcast(f"{username} left the chat\n".encode())
-            print(f"{username} left the chat\n".encode())
+            broadcast(f"{username} left the chat".encode())
+            logging.info(f"{username} left the chat")
             break
         broadcast(f"{username}: {message}".encode())
 
@@ -35,20 +37,23 @@ def recieve():
     """Sets up handling of incoming connetions."""
     while True:
         user, addr = server.accept()
-        print(f"{str(addr)} connected!")
-
-        user.send("Enter username: ".encode())
+        logging.info(f"{str(addr)} connected!")
+        user.send("username:".encode())
         username = user.recv(1024).decode().rstrip("\n")
         users[user] = username
-        print(f"Username of the user is {username}")
-        broadcast(f"{username} joined the chat room!\n".encode())
-        user.send("Connected to the server\n".encode())
+        logging.info(f"Username: {username}")
+        user.send("Connected to the server".encode())
+        broadcast(f"{username} joined the chat room!".encode())
         thread = threading.Thread(target=handle, args=(user,))
         thread.start()
 
 
 if __name__ == "__main__":
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((HOST, PORT))
     server.listen(8)
-    print("Server is listening...")
-
-    recieve()
+    logging.debug("Server is listening...")
+    try:
+        recieve()
+    except KeyboardInterrupt:
+        logging.info("Stopping the server...")
