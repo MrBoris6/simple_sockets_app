@@ -4,6 +4,7 @@ import logging
 
 HOST = "localhost"
 PORT = 2024
+TIMEOUT = 120
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -21,15 +22,23 @@ def broadcast(message):
 
 def handle(user):
     """Handles user connection."""
+    user.settimeout(TIMEOUT)
     while True:
         username = users.get(user)
-        message = user.recv(1024).decode()
+        try:
+            message = user.recv(1024).decode()
+        except socket.timeout:
+            logging.warning(f"{username}'s connection timed out. Closing socket...")
+            user.close()
+            break
+
         if message == "!quit":
             del users[user]
             user.close()
             broadcast(f"{username} left the chat".encode())
             logging.info(f"{username} left the chat")
             break
+
         broadcast(f"{username}: {message}".encode())
 
 
@@ -57,3 +66,5 @@ if __name__ == "__main__":
         recieve()
     except KeyboardInterrupt:
         logging.info("Stopping the server...")
+    finally:
+        server.close()
