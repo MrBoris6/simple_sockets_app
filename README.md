@@ -6,5 +6,5 @@ python3 chat.py
 ```
 Connect to server:
 ```
-nc localhost 2024
+python3 sockets_client.py
 ```
