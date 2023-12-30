@@ -1,4 +1,4 @@
-# Simple socket app
+# Simple socket app (chat)
 ## Usage:
 Run the server:
 ```
