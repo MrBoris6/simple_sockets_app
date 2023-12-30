@@ -1,5 +1,7 @@
 import socket
 import threading
+from datetime import datetime
+
 
 HOST = "localhost"
 PORT = 2024
@@ -15,7 +17,8 @@ def receive():
             if message == "username:":
                 client.send(username.encode())
             else:
-                print(message)
+                curr_time = datetime.now()
+                print(f"[{curr_time.strftime('%Y-%m-%d %H:%M:%S')}] {message}")
         except Exception as e:
             print(f"An error occurred!: {e}")
             break

@@ -21,7 +21,6 @@ def broadcast(message):
 
 def handle(user):
     """Handles user connection."""
-
     while True:
         try:
             username = users.get(user)
@@ -51,7 +50,7 @@ def recieve():
         username = user.recv(1024).decode().rstrip("\n")
         users[user] = username
         logging.info(f"Username: {username}")
-        user.send("Connected to the server".encode())
+        user.send("Welcome to the server!".encode())
         broadcast(f"{username} joined the chat room!".encode())
         thread = threading.Thread(target=handle, args=(user,))
         thread.start()
